@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flex Message Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--sur:#13131a;--sur2:#1c1c28;--bdr:#2a2a3d;--acc:#00d4aa;--grn:#06c755;--txt:#e8e8f0;--mut:#6b6b85;--red:#ff4757}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Noto Sans Thai',sans-serif;height:100vh;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,170,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,170,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;display:grid;grid-template-columns:380px 1fr 340px;grid-template-rows:60px 1fr;height:100vh}
+header{grid-column:1/-1;display:flex;align-items:center;padding:0 24px;gap:16px;border-bottom:1px solid var(--bdr);background:rgba(10,10,15,.95);backdrop-filter:blur(20px)}
+.logo{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--acc)}
+.logo span{color:var(--mut)}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--bdr);color:var(--mut);font-family:'Space Mono',monospace}
+.hact{margin-left:auto;display:flex;gap:10px}
+.panel{background:var(--sur);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.panel.rp{border-right:none;border-left:1px solid var(--bdr)}
+.phd{padding:14px 20px;border-bottom:1px solid var(--bdr);font-size:11px;font-family:'Space Mono',monospace;color:var(--mut);letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+.pbody{flex:1;overflow-y:auto;padding:20px}
+.pbody::-webkit-scrollbar{width:4px}
+.pbody::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+.pfoot{padding:16px 20px;border-top:1px solid var(--bdr);display:flex;flex-direction:column;gap:8px}
+.tabs{display:flex;border-bottom:1px solid var(--bdr)}
+.tab{flex:1;padding:10px;text-align:center;font-size:11px;font-family:'Space Mono',monospace;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.tp{display:none}
+.tp.on{display:block}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;color:var(--mut);font-family:'Space Mono',monospace;letter-spacing:.5px;margin-bottom:6px;text-transform:uppercase}
+input[type=text],textarea,select{width:100%;background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);font-family:'Noto Sans Thai',sans-serif;font-size:13px;padding:10px 12px;outline:none;transition:border-color .2s}
+input[type=text]:focus,textarea:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(0,212,170,.1)}
+textarea{resize:vertical;min-height:70px}
+select option{background:var(--sur2)}
+.crow{display:flex;gap:8px;align-items:center}
+input[type=color]{width:40px;height:36px;border-radius:8px;border:1px solid var(--bdr);background:var(--sur2);cursor:pointer;padding:2px;flex-shrink:0}
+.stit{font-size:11px;font-family:'Space Mono',monospace;color:var(--acc);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.tip{font-size:11px;color:var(--mut);background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.1);border-radius:8px;padding:10px 12px;margin-top:10px}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tc{background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s;text-align:center}
+.tc:hover,.tc.on{border-color:var(--acc);background:rgba(0,212,170,.05)}
+.tc.on{box-shadow:0 0 0 1px var(--acc)}
+.ti{font-size:24px;margin-bottom:6px}
+.tn{font-size:11px;color:var(--mut);font-family:'Space Mono',monospace}
+/* preview */
+.pva{background:#e8eaed;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;position:relative;overflow:auto}
+.pvl{position:absolute;top:16px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:10px;color:#999;letter-spacing:1px;text-transform:uppercase}
+.phone{width:320px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.3),0 0 0 1px rgba(0,0,0,.1)}
+.pbar{background:#2c2c2c;padding:12px 16px;display:flex;align-items:center;gap:8px}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#06c755,#00a344);display:flex;align-items:center;justify-content:center;font-size:14px}
+.cn{color:#fff;font-size:13px;font-weight:600}
+.cs{color:#888;font-size:10px}
+.pchat{background:#f0f3f4;padding:16px 12px;min-height:350px}
+.fcard{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);margin-left:8px;max-width:260px}
+.fhero{width:100%;height:140px;object-fit:cover;display:block}
+.fhbox{width:100%;height:140px;display:flex;align-items:center;justify-content:center;font-size:36px}
+.fbody{padding:14px}
+.fttl{font-size:16px;font-weight:700;color:#111;margin-bottom:4px;line-height:1.3}
+.fsub{font-size:12px;color:#888;margin-bottom:8px}
+.fdsc{font-size:12px;color:#555;line-height:1.5;margin-bottom:10px}
+.fprc{font-size:20px;font-weight:700;margin-bottom:10px}
+.fbtn{display:block;width:100%;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:700;margin-bottom:6px;cursor:default}
+.ftags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.ftag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+/* json */
+.jout{font-family:'Space Mono',monospace;font-size:11px;line-height:1.6;background:var(--bg);border:none;color:#a8ff78;padding:16px;height:100%;resize:none;width:100%;outline:none}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:'Noto Sans Thai',sans-serif;white-space:nowrap}
+.bp{background:var(--grn);color:#fff}.bp:hover{background:#00a344}
+.bs{background:var(--sur2);color:var(--txt);border:1px solid var(--bdr)}.bs:hover{border-color:var(--acc);color:var(--acc)}
+.ba{background:var(--acc);color:var(--bg)}.ba:hover{opacity:.9}
+.bw{width:100%}
+/* dynamic button rows */
+.brow{background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;padding:10px;margin-bottom:8px}
+.brow-top{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.brow input[type=text],.brow select{font-size:12px;padding:7px 10px}
+.brow-del{background:rgba(255,71,87,.15);color:var(--red);border:1px solid var(--red);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;white-space:nowrap;flex-shrink:0}
+.brow-del:hover{background:rgba(255,71,87,.3)}
+.addbtn{width:100%;margin-top:4px;background:rgba(0,212,170,.08);color:var(--acc);border:1px dashed var(--acc);border-radius:8px;padding:9px;cursor:pointer;font-size:13px;font-family:'Noto Sans Thai',sans-serif;transition:all .2s}
+.addbtn:hover{background:rgba(0,212,170,.15)}
+/* toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--sur);border:1px solid var(--acc);color:var(--txt);padding:12px 24px;border-radius:40px;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:9999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.on{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="logo">FLEX<span>//</span>DESIGN</div>
+  <div class="badge">LINE Flex Message v2</div>
+  <div class="hact">
+    <button class="btn bs" id="btnCopyJson">📋 Copy JSON</button>
+    <button class="btn bs" id="btnCopyScript">📜 Copy Script</button>
+    <button class="btn ba" id="btnSim">🔗 Simulator</button>
+    <button class="btn bp" id="btnSend">💬 ส่งให้เพื่อน</button>
+  </div>
+</header>
+
+<!-- LEFT -->
+<div class="panel">
+  <div class="phd"><div class="dot"></div>TEMPLATES & DESIGN</div>
+  <div class="tabs">
+    <div class="tab on" data-tab="tTpl">Template</div>
+    <div class="tab" data-tab="tCnt">เนื้อหา</div>
+    <div class="tab" data-tab="tSty">สไตล์</div>
+  </div>
+  <div class="pbody">
+
+    <div id="tTpl" class="tp on">
+      <div class="stit">เลือก Template</div>
+      <div class="tgrid">
+        <div class="tc on" data-tpl="product"><div class="ti">🛍️</div><div class="tn">Product</div></div>
+        <div class="tc" data-tpl="event"><div class="ti">🎉</div><div class="tn">Event</div></div>
+        <div class="tc" data-tpl="profile"><div class="ti">👤</div><div class="tn">Profile</div></div>
+        <div class="tc" data-tpl="receipt"><div class="ti">🧾</div><div class="tn">Receipt</div></div>
+        <div class="tc" data-tpl="announce"><div class="ti">📢</div><div class="tn">ประกาศ</div></div>
+        <div class="tc" data-tpl="coupon"><div class="ti">🎟️</div><div class="tn">Coupon</div></div>
+      </div>
+    </div>
+
+    <div id="tCnt" class="tp">
+      <div class="stit">แก้ไขเนื้อหา</div>
+      <div class="fg"><label class="fl">📝 หัวข้อ</label><input type="text" id="iTitle" placeholder="หัวข้อ..."></div>
+      <div class="fg"><label class="fl">📌 หัวข้อย่อย</label><input type="text" id="iSub" placeholder="รายละเอียดสั้นๆ..."></div>
+      <div class="fg"><label class="fl">📄 คำอธิบาย</label><textarea id="iDesc" placeholder="คำอธิบาย..."></textarea></div>
+      <div class="fg"><label class="fl">💰 ราคา</label><input type="text" id="iPrice" placeholder="฿999"></div>
+      <div class="fg"><label class="fl">🏷️ แท็ก (คั่นด้วย ,)</label><input type="text" id="iTags" placeholder="ใหม่, ลดราคา"></div>
+      <div class="stit" style="margin-top:8px">🔘 ปุ่ม</div>
+      <div id="btnList"></div>
+      <button class="addbtn" id="addBtn">+ เพิ่มปุ่ม</button>
+    </div>
+
+    <div id="tSty" class="tp">
+      <div class="stit">ปรับแต่งสไตล์</div>
+      <div class="fg">
+        <label class="fl">🎨 สีหลัก</label>
+        <div class="crow"><input type="color" id="cpPick" value="#06c755"><input type="text" id="cpHex" value="#06c755" style="flex:1"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">🎨 สีรอง</label>
+        <div class="crow"><input type="color" id="csPick" value="#7c3aed"><input type="text" id="csHex" value="#7c3aed" style="flex:1"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">📐 รูปแบบ Hero</label>
+        <select id="selHero">
+          <option value="gradient">Gradient</option>
+          <option value="url">ลิ้งก์รูปภาพ</option>
+          <option value="emoji">Emoji</option>
+        </select>
+      </div>
+      <div id="grpUrl" class="fg" style="display:none">
+        <label class="fl">🖼️ URL รูปภาพ</label>
+        <input type="text" id="iImgUrl" placeholder="https://example.com/image.jpg">
+      </div>
+      <div id="grpEmoji" class="fg" style="display:none">
+        <label class="fl">😊 Emoji</label>
+        <input type="text" id="iEmoji" placeholder="🎉">
+      </div>
+      <div class="fg">
+        <label class="fl">🔠 สีราคา</label>
+        <div class="crow"><input type="color" id="cprPick" value="#e74c3c"><input type="text" id="cprHex" value="#e74c3c" style="flex:1"></div>
+      </div>
+      <div class="tip">💡 สีและสไตล์จะถูกนำไปใช้ใน JSON อัตโนมัติ</div>
+    </div>
+
+  </div>
+  <div class="pfoot" style="flex-direction:row">
+    <div style="flex:1">
+      <label class="fl" style="margin-bottom:4px">🔤 Alt Text</label>
+      <input type="text" id="iAlt" value="Flex Message">
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div class="pva">
+  <div class="pvl">LINE PREVIEW</div>
+  <div class="phone">
+    <div class="pbar">
+      <div class="av">👤</div>
+      <div><div class="cn">เพื่อนฉัน</div><div class="cs">online</div></div>
+    </div>
+    <div class="pchat">
+      <div class="fcard" id="pvCard"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="panel rp">
+  <div class="phd"><div class="dot"></div>JSON OUTPUT</div>
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+    <textarea class="jout" id="jOut" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="pfoot">
+    <button class="btn bs bw" id="rCopyJson">📋 Copy JSON</button>
+    <button class="btn bs bw" id="rCopyScript">📜 Copy Script</button>
+    <button class="btn bp bw" id="rSend">💬 ส่งให้เพื่อนทาง LINE</button>
+  </div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ================================================================
+// DATA
+// ================================================================
+var TPLS = {
+  product:  {title:'AirPods Pro 2',sub:'Apple | Wireless Earbuds',desc:'เสียงคุณภาพสูง ตัดเสียงรบกวน Active Noise Cancellation รุ่นใหม่ล่าสุด',price:'฿8,990',tags:'ของแท้, ส่งฟรี, ใหม่',btns:[{lbl:'สั่งซื้อเลย',url:'https://apple.com',sty:'primary'},{lbl:'บันทึก',url:'',sty:'secondary'}]},
+  event:    {title:'งาน Tech Festival 2025',sub:'สยามพารากอน | 20-22 ธ.ค. 67',desc:'พบกับเทคโนโลยีล้ำสมัยจากแบรนด์ดังทั่วโลก ฟรี!',price:'ฟรี!',tags:'ฟรี, เทคโนโลยี, กรุงเทพฯ',btns:[{lbl:'ลงทะเบียน',url:'https://example.com',sty:'primary'},{lbl:'ดูแผนที่',url:'https://maps.google.com',sty:'secondary'}]},
+  profile:  {title:'สมชาย พัฒนาดี',sub:'Senior Developer | ABC Company',desc:'10+ ปี ประสบการณ์ด้าน Full Stack Development',price:'ติดต่องาน',tags:'Developer, Freelance',btns:[{lbl:'ติดต่อ',url:'https://example.com',sty:'primary'},{lbl:'LinkedIn',url:'https://linkedin.com',sty:'secondary'}]},
+  receipt:  {title:'ใบเสร็จ #ORD-2025-001',sub:'วันที่ 18 ก.พ. 2568',desc:'ขอบคุณที่ใช้บริการ! สินค้าจัดส่งภายใน 1-3 วันทำการ',price:'รวม ฿1,250',tags:'ชำระแล้ว, จัดส่ง',btns:[{lbl:'ติดตามพัสดุ',url:'https://track.example.com',sty:'primary'},{lbl:'สั่งซื้ออีกครั้ง',url:'https://shop.example.com',sty:'secondary'}]},
+  announce: {title:'ประกาศสำคัญ',sub:'แผนก IT | 18 กุมภาพันธ์ 2568',desc:'ระบบจะหยุดให้บริการชั่วคราว วันอาทิตย์ที่ 20 ก.พ. เวลา 02:00-06:00 น.',price:'',tags:'ด่วน, ระบบ, IT',btns:[{lbl:'อ่านรายละเอียด',url:'https://example.com',sty:'primary'}]},
+  coupon:   {title:'ส่วนลด 30%',sub:'โค้ด: FLEX30 | หมดอายุ 28 ก.พ.',desc:'ใช้โค้ดนี้เพื่อรับส่วนลด 30% สำหรับสินค้าทุกชิ้น',price:'ลดสูงสุด ฿500',tags:'ส่วนลด, โค้ด, ด่วน',btns:[{lbl:'ใช้โค้ด',url:'https://shop.example.com',sty:'primary'},{lbl:'แชร์ให้เพื่อน',url:'',sty:'secondary'}]}
+};
+
+// ================================================================
+// HELPERS
+// ================================================================
+function el(id) { return document.getElementById(id); }
+
+function showToast(msg) {
+  var t = el('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(function() { t.classList.remove('on'); }, 3000);
+}
+
+function copyText(text, label) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text)
+      .then(function() { showToast('✅ ' + label); })
+      .catch(function() { fallbackCopy(text, label); });
+  } else {
+    fallbackCopy(text, label);
+  }
+}
+
+function fallbackCopy(text, label) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('✅ ' + label);
+  } catch(e) {
+    showToast('❌ คัดลอกไม่ได้ กรุณา Ctrl+C');
+  }
+  document.body.removeChild(ta);
+}
+
+function safeLbl(s) { return (s || '').substring(0, 20); }
+
+// ================================================================
+// TABS
+// ================================================================
+document.querySelectorAll('.tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('on'); });
+    document.querySelectorAll('.tp').forEach(function(t) { t.classList.remove('on'); });
+    tab.classList.add('on');
+    el(tab.getAttribute('data-tab')).classList.add('on');
+  });
+});
+
+// ================================================================
+// DYNAMIC BUTTON ROWS
+// ================================================================
+var rowId = 0;
+
+function makeRow(data) {
+  rowId++;
+  var id = 'row' + rowId;
+  var lbl = (data && data.lbl) ? data.lbl : '';
+  var url = (data && data.url) ? data.url : '';
+  var sty = (data && data.sty) ? data.sty : 'secondary';
+
+  var div = document.createElement('div');
+  div.className = 'brow';
+  div.id = id;
+
+  var top = document.createElement('div');
+  top.className = 'brow-top';
+
+  var lblInput = document.createElement('input');
+  lblInput.type = 'text';
+  lblInput.className = 'brow-lbl';
+  lblInput.placeholder = 'ชื่อปุ่ม (max 20)';
+  lblInput.maxLength = 20;
+  lblInput.value = lbl;
+  lblInput.addEventListener('input', render);
+
+  var stySelect = document.createElement('select');
+  stySelect.className = 'brow-sty';
+  stySelect.style.width = '90px';
+  ['primary','secondary','outline'].forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v === 'primary' ? 'หลัก' : v === 'secondary' ? 'รอง' : 'กรอบ';
+    if (v === sty) opt.selected = true;
+    stySelect.appendChild(opt);
+  });
+  stySelect.addEventListener('change', render);
+
+  var delBtn = document.createElement('button');
+  delBtn.className = 'brow-del';
+  delBtn.textContent = '✕';
+  delBtn.addEventListener('click', function() {
+    div.remove();
+    render();
+  });
+
+  top.appendChild(lblInput);
+  top.appendChild(stySelect);
+  top.appendChild(delBtn);
+
+  var urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.className = 'brow-url';
+  urlInput.placeholder = 'https://...';
+  urlInput.value = url;
+  urlInput.addEventListener('input', render);
+
+  div.appendChild(top);
+  div.appendChild(urlInput);
+  return div;
+}
+
+function loadBtns(list) {
+  var bl = el('btnList');
+  bl.innerHTML = '';
+  rowId = 0;
+  (list || []).forEach(function(b) {
+    bl.appendChild(makeRow(b));
+  });
+}
+
+el('addBtn').addEventListener('click', function() {
+  el('btnList').appendChild(makeRow(null));
+  render();
+});
+
+function getBtns() {
+  var rows = document.querySelectorAll('.brow');
+  var result = [];
+  rows.forEach(function(row) {
+    var lbl = row.querySelector('.brow-lbl').value.trim();
+    var url = row.querySelector('.brow-url').value.trim();
+    var sty = row.querySelector('.brow-sty').value;
+    if (lbl) result.push({ lbl: lbl, url: url || 'https://example.com', sty: sty });
+  });
+  return result;
+}
+
+// ================================================================
+// TEMPLATES
+// ================================================================
+document.querySelectorAll('.tc').forEach(function(card) {
+  card.addEventListener('click', function() {
+    document.querySelectorAll('.tc').forEach(function(c) { c.classList.remove('on'); });
+    card.classList.add('on');
+    var d = TPLS[card.getAttribute('data-tpl')];
+    el('iTitle').value = d.title;
+    el('iSub').value   = d.sub;
+    el('iDesc').value  = d.desc;
+    el('iPrice').value = d.price;
+    el('iTags').value  = d.tags;
+    loadBtns(d.btns);
+    render();
+  });
+});
+
+// ================================================================
+// HERO TYPE
+// ================================================================
+el('selHero').addEventListener('change', function() {
+  el('grpUrl').style.display   = this.value === 'url'   ? 'block' : 'none';
+  el('grpEmoji').style.display = this.value === 'emoji' ? 'block' : 'none';
+  render();
+});
+
+// ================================================================
+// COLOR SYNC
+// ================================================================
+function bindColor(pickId, hexId) {
+  var pick = el(pickId);
+  var hex  = el(hexId);
+  pick.addEventListener('input', function() { hex.value = pick.value; render(); });
+  hex.addEventListener('input', function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) { pick.value = hex.value; render(); }
+  });
+}
+bindColor('cpPick','cpHex');
+bindColor('csPick','csHex');
+bindColor('cprPick','cprHex');
+
+// ================================================================
+// LIVE INPUTS
+// ================================================================
+['iTitle','iSub','iDesc','iPrice','iTags','iImgUrl','iEmoji','iAlt'].forEach(function(id) {
+  var e = el(id);
+  if (e) e.addEventListener('input', render);
+});
+
+// ================================================================
+// GET VALUES
+// ================================================================
+function getV() {
+  return {
+    title  : el('iTitle').value || 'หัวข้อ',
+    sub    : el('iSub').value   || '',
+    desc   : el('iDesc').value  || '',
+    price  : el('iPrice').value || '',
+    tags   : el('iTags').value  || '',
+    imgUrl : el('iImgUrl').value || '',
+    emoji  : el('iEmoji').value  || '🎉',
+    cp     : el('cpPick').value,
+    cs     : el('csPick').value,
+    cpr    : el('cprPick').value,
+    hero   : el('selHero').value,
+    alt    : el('iAlt').value   || 'Flex Message',
+    btns   : getBtns()
+  };
+}
+
+// ================================================================
+// RENDER PREVIEW
+// ================================================================
+function render() {
+  var v = getV();
+  var tags = v.tags.split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+
+  // hero
+  var heroHtml = '';
+  if (v.hero === 'url') {
+    if (v.imgUrl) {
+      heroHtml = '<img class="fhero" src="' + v.imgUrl + '" onerror="this.style.display=\'none\'">';
+    } else {
+      heroHtml = '<div class="fhbox" style="background:#ddd;color:#999;font-size:13px">🖼️ ใส่ URL รูปภาพ</div>';
+    }
+  } else if (v.hero === 'emoji') {
+    heroHtml = '<div class="fhbox" style="background:linear-gradient(135deg,' + v.cp + ',' + v.cs + ')">' + v.emoji + '</div>';
+  } else {
+    heroHtml = '<div class="fhbox" style="background:linear-gradient(135deg,' + v.cp + ',' + v.cs + ')">✨</div>';
+  }
+
+  // tags
+  var tagsHtml = '';
+  if (tags.length) {
+    tagsHtml = '<div class="ftags">' + tags.map(function(t) {
+      return '<span class="ftag" style="background:' + v.cp + '22;color:' + v.cp + '">' + t + '</span>';
+    }).join('') + '</div>';
+  }
+
+  var priceHtml = v.price ? '<div class="fprc" style="color:' + v.cpr + '">' + v.price + '</div>' : '';
+
+  var btnsHtml = v.btns.map(function(b) {
+    var s;
+    if (b.sty === 'primary') {
+      s = 'background:' + v.cp + ';color:#fff';
+    } else if (b.sty === 'outline') {
+      s = 'border:2px solid ' + v.cp + ';color:' + v.cp + ';background:transparent';
+    } else {
+      s = 'background:' + v.cs + '22;color:' + v.cs + ';border:1px solid ' + v.cs;
+    }
+    return '<div class="fbtn" style="' + s + '">' + b.lbl + '</div>';
+  }).join('');
+
+  el('pvCard').innerHTML =
+    heroHtml +
+    '<div class="fbody">' +
+      tagsHtml +
+      '<div class="fttl">' + v.title + '</div>' +
+      (v.sub   ? '<div class="fsub">' + v.sub  + '</div>' : '') +
+      (v.desc  ? '<div class="fdsc">' + v.desc + '</div>' : '') +
+      priceHtml +
+      btnsHtml +
+    '</div>';
+
+  buildJSON(v, tags);
+}
+
+// ================================================================
+// BUILD JSON (valid LINE Flex Message bubble)
+// ================================================================
+function buildJSON(v, tags) {
+  // hero
+  var hero;
+  if (v.hero === 'url' && v.imgUrl) {
+    hero = {
+      type: "image",
+      url: v.imgUrl,
+      size: "full",
+      aspectRatio: "20:13",
+      aspectMode: "cover"
+    };
+  } else if (v.hero === 'emoji') {
+    hero = {
+      type: "box",
+      layout: "vertical",
+      contents: [{
+        type: "text",
+        text: v.emoji,
+        align: "center",
+        size: "xxl",
+        color: "#ffffff"
+      }],
+      backgroundColor: v.cp,
+      paddingAll: "28px"
+    };
+  } else {
+    hero = {
+      type: "box",
+      layout: "vertical",
+      contents: [{
+        type: "text",
+        text: "✨",
+        align: "center",
+        size: "xxl",
+        color: "#ffffff"
+      }],
+      backgroundColor: v.cp,
+      paddingAll: "28px"
+    };
+  }
+
+  // tags
+  var tagItems = tags.slice(0, 5).map(function(t) {
+    return { type: "text", text: t.substring(0, 10), size: "xs", color: v.cp, flex: 0 };
+  });
+
+  // body
+  var body = [];
+  if (tagItems.length) {
+    body.push({ type: "box", layout: "horizontal", contents: tagItems, spacing: "sm" });
+  }
+  body.push({ type: "text", text: v.title, weight: "bold", size: "xl", color: "#111111", wrap: true });
+  if (v.sub)   body.push({ type: "text", text: v.sub,   size: "sm", color: "#888888", margin: "xs", wrap: true });
+  if (v.desc)  body.push({ type: "text", text: v.desc,  size: "sm", color: "#555555", margin: "md", wrap: true });
+  if (v.price) body.push({ type: "text", text: v.price, size: "xl", weight: "bold", color: v.cpr, margin: "md" });
+
+  // buttons
+  var btns = v.btns.map(function(b) {
+    var btn = {
+      type: "button",
+      action: { type: "uri", label: safeLbl(b.lbl), uri: b.url },
+      height: "sm",
+      margin: "sm"
+    };
+    if (b.sty === 'primary') {
+      btn.style = "primary";
+      btn.color = v.cp;
+    } else {
+      btn.style = "secondary";
+    }
+    return btn;
+  });
+
+  // bubble
+  var bubble = {
+    type: "bubble",
+    hero: hero,
+    body: {
+      type: "box",
+      layout: "vertical",
+      contents: body,
+      spacing: "sm",
+      paddingAll: "14px"
+    }
+  };
+  if (btns.length) {
+    bubble.footer = {
+      type: "box",
+      layout: "vertical",
+      contents: btns,
+      spacing: "sm",
+      paddingAll: "14px"
+    };
+  }
+
+  el('jOut').value = JSON.stringify(bubble, null, 2);
+}
+
+// ================================================================
+// ACTIONS
+// ================================================================
+function doCopyJson() {
+  var txt = el('jOut').value;
+  if (!txt) { showToast('⚠️ ไม่มี JSON'); return; }
+  copyText(txt, 'คัดลอก JSON สำเร็จ');
+}
+
+function doCopyScript() {
+  var txt = el('jOut').value;
+  if (!txt) { showToast('⚠️ ไม่มี JSON'); return; }
+  try {
+    var bubble = JSON.parse(txt);
+    var flexMsg = { type: "flex", altText: el('iAlt').value || 'Flex Message', contents: bubble };
+    var script = [
+      '// LINE Flex Message Script',
+      '// ใช้กับ LINE Messaging API Node.js SDK',
+      '',
+      'const flexMessage = ' + JSON.stringify(flexMsg, null, 2) + ';',
+      '',
+      '// ส่งผ่าน Messaging API',
+      '// await client.replyMessage(replyToken, flexMessage);',
+      '// await client.pushMessage(userId, flexMessage);'
+    ].join('\n');
+    copyText(script, 'คัดลอก Script สำเร็จ');
+  } catch(e) {
+    showToast('⚠️ JSON ไม่ถูกต้อง');
+  }
+}
+
+function doSend() {
+  var txt = el('jOut').value;
+  if (!txt) { showToast('⚠️ ไม่มี JSON'); return; }
+  try {
+    var bubble = JSON.parse(txt);
+    var flexMsg = { type: "flex", altText: el('iAlt').value || 'Flex Message', contents: bubble };
+    var url = 'https://share-target-picker.vercel.app/?flexMessage=' + encodeURIComponent(JSON.stringify(flexMsg));
+    window.open(url, '_blank', 'width=600,height=700');
+    showToast('🚀 เปิดหน้าส่งข้อความ LINE!');
+  } catch(e) {
+    showToast('⚠️ JSON ไม่ถูกต้อง');
+  }
+}
+
+el('btnCopyJson').addEventListener('click', doCopyJson);
+el('rCopyJson').addEventListener('click', doCopyJson);
+el('btnCopyScript').addEventListener('click', doCopyScript);
+el('rCopyScript').addEventListener('click', doCopyScript);
+el('btnSim').addEventListener('click', function() { window.open('https://developers.line.biz/flex-simulator/', '_blank'); });
+el('btnSend').addEventListener('click', doSend);
+el('rSend').addEventListener('click', doSend);
+
+// ================================================================
+// INIT
+// ================================================================
+document.querySelector('[data-tpl="product"]').click();
+</script>
+</body>
+</html>
